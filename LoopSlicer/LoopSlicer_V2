@@ -1,0 +1,48 @@
+#! /bin/bash
+#Loopslicer
+
+if [ $# -lt 3 ]; then
+echo "$0:"
+echo "1. Drag files or enter file directory"
+echo "2. How many loops?"
+echo "3. Which file extension?"
+echo
+exit
+fi
+
+INPUT=$1
+PARTS=$2
+EXT=$3
+FILENAME=`basename "${INPUT}"`
+DIRNAME=`dirname "${INPUT}"`
+
+echo ${INPUT}
+
+SAMPLES=$(soxi -s "${INPUT}")
+let SAMPLESPERPART=${SAMPLES}/${PARTS}
+
+echo
+echo "name song: ${FILENAME}"
+echo "directory: ${DIRNAME}"
+echo
+echo "samples stereo: ${SAMPLES}"
+echo "samples per loop: ${SAMPLESPERPART}"
+echo
+
+START=0
+n=1
+
+while [ ${PARTS} -gt 0 ];
+do
+echo "creating loop ${n}"
+echo "new startingpoint: ${START}"
+sox "${INPUT}" loop${n}.${EXT} trim ${START}s ${SAMPLESPERPART}s
+mv loop${n}.${EXT} "${DIRNAME}"
+let START=${START}+${SAMPLESPERPART}
+let n=${n}+1
+let PARTS=${PARTS}-1
+done
+
+echo
+echo "Done!"
+echo
